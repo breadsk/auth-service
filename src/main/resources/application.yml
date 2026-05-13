@@ -1,0 +1,19 @@
+server:
+  port: 8083
+
+spring:
+  application:
+    name: auth-service
+
+  datasource:
+    url: jdbc:mysql://localhost:3306/db_auth?useSSL=false&serverTimezone=UTC
+    username: root
+    password:
+  jpa:
+    hibernate:
+      ddl-auto: validate # Importante: Flyway administrará el esquema, Hibernate solo valida
+    show-sql: true
+  flyway:
+    enabled: true
+    baseline-on-migrate: true # Si la BD ya tiene tablas sin Flyway, crea una línea base
+    locations: classpath:db/migration # Carpeta donde irán los scripts SQL
