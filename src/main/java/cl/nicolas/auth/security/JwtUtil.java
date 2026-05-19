@@ -14,13 +14,38 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+/**
+ * Generación: Crea un JWT con sub (username), roles (concatenados), fechas de
+ * emisión
+ * y expiración, firmado con HS256.
+ * Validación: Verifica firma y expiración, devuelve los claims.
+ */
+
+/**
+ * Proposito: Marca la clase como un bean de Spring, para que el contenedor la
+ * gestione ( la cree e inyecte
+ * automaticamente donde se necesite, por ejemplo en JwtAuthenticationFilter).
+ * Spring escaneará esta clase y la registrará en su contexto
+ */
+
 @Component
 public class JwtUtil {
 
     // Clave fija: Duoc.1983
     private static final String SECRET = "Duoc.1983Duoc.1983Duoc.1983Duoc.1983"; // Clave de al menos 256 bits
+    /**
+     * Constante: 3.600.000 milisegundos = 1 hora.
+     * El token será válido durante ese tiempo desde su emisión.
+     */
     private static final long EXPIRATION_TIME = 3600000; // 1 hora
 
+    /**
+     * Proposito: Convertir la clave secreta (String) en un objeto Key utilizable
+     * por JWT para firmar/verficar
+     * con el algoritmo HMAC-SHA256
+     * 
+     * @return
+     */
     private Key getSigningKey() {
         byte[] keyBytes = SECRET.getBytes();
         return Keys.hmacShaKeyFor(keyBytes);

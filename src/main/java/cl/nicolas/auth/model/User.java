@@ -21,6 +21,21 @@ public class User {
     @Column(nullable = false)
     private String password; // almacenar siempre el hash BCrypt
 
+    /**
+     * anotaciones que definen cómo JPA (Hibernate) mapea
+     * la colección de roles a la base de datos.
+     */
+
+    /**
+     * Al usar fetch = FetchType.EAGER, cada vez que busques un
+     * usuario con userRepository.findById(...), JPA hará un
+     * JOIN (o una segunda consulta) para traer los roles
+     * automáticamente. Esto evita el famoso error
+     * LazyInitializationException cuando intentas
+     * acceder a roles fuera de una transacción
+     * abierta. Para datos pequeños como roles, es aceptable.
+     */
+
     @ElementCollection(fetch = FetchType.EAGER)
     @CollectionTable(name = "user_roles", joinColumns = @JoinColumn(name = "user_id"))
     @Column(name = "role")
