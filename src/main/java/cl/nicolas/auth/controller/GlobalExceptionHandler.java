@@ -1,5 +1,6 @@
 package cl.nicolas.auth.controller;
 
+import cl.nicolas.auth.dto.ErrorResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
@@ -7,8 +8,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
-
-import java.util.Map;
+import java.time.LocalDateTime;
 
 /**
  * @RestControllerAdvice es una especializacion de @Component
@@ -28,18 +28,39 @@ public class GlobalExceptionHandler {
 
     private static final Logger log = LoggerFactory.getLogger(GlobalExceptionHandler.class);
 
+    // 1. Manejo de credenciales incorrectas (401)
     @ExceptionHandler(BadCredentialsException.class)
-    public ResponseEntity<Map<String, String>> handleBadCredentials(BadCredentialsException ex) {
-        log.warn("Autenticacion fallida: {}", ex.getMessage());
-        return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                .body(Map.of("error", "Credenciales inválidas"));
+    public ResponseEntity<ErrorResponse> handleBadCredentials(BadCredentialsException ex) {
+        log.warn("Autenticación fallida: {}", ex.getMessage());
+        ErrorResponse error = new ErrorResponse(
+                "Credenciales inválidas",
+                ex.getMessage(),
+                HttpStatus.UNAUTHORIZED.value(),
+                LocalDateTime.now());
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(error);
     }
 
+    // 2. Manejo de excepciones de negocio (RuntimeException y subclases) (400)
     @ExceptionHandler(RuntimeException.class)
-    public ResponseEntity<Map<String, String>> handleRuntime(RuntimeException ex) {
+    public ResponseEntity<ErrorResponse> handleRuntime(RuntimeException ex) {
         log.error("Error en la aplicación", ex);
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                .body(Map.of("Error", ex.getMessage()));
+        ErrorResponse error = new ErrorResponse(
+                "Error en la solicitud",
+                ex.getMessage(),
+                HttpStatus.BAD_REQUEST.value(),
+                LocalDateTime.now());
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error);
     }
 
+    // 3. Manejo de cualquier otra excepción no capturada (500)
+    @ExceptionHandler(Exception.class)
+    public ResponseEntity<ErrorResponse> handleGeneric(Exception ex) {
+        log.error("Error interno del servidor no controlado", ex);
+        ErrorResponse error = new ErrorResponse(
+                "Error interno en el servidor",
+                "Ocurrió un error inesperado. Por favor contacte al administrador.",
+                HttpStatus.INTERNAL_SERVER_ERROR.value(),
+                LocalDateTime.now());
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(error);
+    }
 }
