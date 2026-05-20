@@ -31,29 +31,46 @@ public class AuthController {
     private final JwtUtil jwtUtil;
     private static final Logger log = LoggerFactory.getLogger(AuthController.class);
 
+    // @PostMapping("/login")
+    // public ResponseEntity<AuthResponse> login(@Valid @RequestBody AuthRequest
+    // request) {
+    // String username = request.getUsername();
+    // MDC.put("user", username);
+    // log.info("Intento de login iniciado");
+    // try {
+    // Authentication authentication = authenticationManager.authenticate(
+    // new UsernamePasswordAuthenticationToken(username, request.getPassword()));
+    // UserDetails userDetails = (UserDetails) authentication.getPrincipal();
+    // String token = jwtUtil.generateToken(userDetails);
+
+    // // Log exitoso con información del token ( solo primeros caracteres por
+    // // seguridad)
+    // String tokenPreview = token.substring(0, Math.min(token.length(), 10)) +
+    // "...";
+    // MDC.put("tokenPreview", tokenPreview);
+    // log.info("Login exitoso para usuario: {}", username);
+    // return ResponseEntity.ok(new AuthResponse(token));
+    // } catch (BadCredentialsException e) {
+    // log.warn("Intento de login fallido para usuario {} - Credenciales invalida",
+    // username);
+    // throw e;
+    // } finally {
+    // MDC.clear();
+    // }
+    // }
+
     @PostMapping("/login")
     public ResponseEntity<AuthResponse> login(@Valid @RequestBody AuthRequest request) {
-        String username = request.getUsername();
-        MDC.put("user", username);
-        log.info("Intento de login iniciado");
-        try {
-            Authentication authentication = authenticationManager.authenticate(
-                    new UsernamePasswordAuthenticationToken(username, request.getPassword()));
-            UserDetails userDetails = (UserDetails) authentication.getPrincipal();
-            String token = jwtUtil.generateToken(userDetails);
+        MDC.put("user", request.getUsername());
+        log.info("Intento de login");
 
-            // Log exitoso con información del token ( solo primeros caracteres por
-            // seguridad)
-            String tokenPreview = token.substring(0, Math.min(token.length(), 10)) + "...";
-            MDC.put("tokenPreview", tokenPreview);
-            log.info("Login exitoso para usuario: {}", username);
-            return ResponseEntity.ok(new AuthResponse(token));
-        } catch (BadCredentialsException e) {
-            log.warn("Intento de login fallido para usuario {} - Credenciales invalida", username);
-            throw e;
-        } finally {
-            MDC.clear();
-        }
+        Authentication authentication = authenticationManager.authenticate(
+                new UsernamePasswordAuthenticationToken(request.getUsername(), request.getPassword()));
+        UserDetails userDetails = (UserDetails) authentication.getPrincipal();
+        String token = jwtUtil.generateToken(userDetails);
+
+        log.info("Login exitoso para usuario: {}", request.getUsername());
+        return ResponseEntity.ok(new AuthResponse(token));
     }
 
     @PostMapping("/register")
